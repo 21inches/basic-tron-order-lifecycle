@@ -24,10 +24,6 @@ async function createOrder(
   resolverAddress,
   srcTimestamp
 ) {
-    console.log("createOrder");
-    console.log("srcChainUserAddress", srcChainUserAddress);
-    console.log("resolverAddress", resolverAddress);
-
     // Convert TRON address if needed
     if (srcChainId === CHAIN_IDS.TRON_MAINNET || srcChainId === CHAIN_IDS.TRON_NILE) {
       srcChainUserAddress = tronAddressToHex(srcChainUserAddress);
