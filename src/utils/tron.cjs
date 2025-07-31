@@ -12,7 +12,7 @@ const _tronWeb = new TronWeb({
  * @param {string} tronAddress - The TRON address to convert
  * @returns {string} The hex representation of the address
  */
-export function tronAddressToHex(tronAddress) {
+function tronAddressToHex(tronAddress) {
   if (!tronAddress) {
     throw new Error("TRON address is required");
   }
@@ -35,7 +35,7 @@ export function tronAddressToHex(tronAddress) {
  * @param {string} address - The address to validate
  * @returns {boolean} True if valid Base54 TRON address
  */
-export function isValidBase58TronAddress(address) {
+function isValidBase58TronAddress(address) {
     return typeof address === 'string' && TronWeb.isAddress(address);
 }
 
@@ -45,7 +45,7 @@ export function isValidBase58TronAddress(address) {
  * @param {string} network - Network name ('mainnet' or 'nile')
  * @returns {number} Chain ID
  */
-export function getTronChainId(network = 'nile') {
+function getTronChainId(network = 'nile') {
   const chainIds = {
     mainnet: 728126428,
     nile: 3448148188,
@@ -53,3 +53,9 @@ export function getTronChainId(network = 'nile') {
 
   return chainIds[network.toLowerCase()] || chainIds.nile;
 } 
+
+module.exports = { 
+  tronAddressToHex,
+  isValidBase58TronAddress,
+  getTronChainId
+ };
