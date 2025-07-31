@@ -1,5 +1,6 @@
-import { createOrder, createTronOrder, CHAIN_IDS } from '../order.js';
+import { createOrder, createTronOrder } from '../order.js';
 import { config } from '../../config/tron.js';
+import { getTronChainId } from '../utils/tron.js';
 
 /**
  * Example of creating a basic order
@@ -14,7 +15,7 @@ async function createBasicOrderExample() {
       srcTokenAddress: config.src.USDT,
       dstTokenAddress: config.dst.BLT,
       secret: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-      srcChainId: CHAIN_IDS.TRON_NILE,
+      srcChainId: getTronChainId('nile'),
       dstChainId: config.dst.ChainId,
       resolverAddress: config.src.ResolverContractAddress,
       srcTimestamp: BigInt(Math.floor(Date.now() / 1000)),
@@ -42,7 +43,7 @@ async function createCustomOrderExample() {
       srcTokenAddress: config.src.USDT,
       dstTokenAddress: config.dst.BLT,
       secret: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-      srcChainId: CHAIN_IDS.TRON_NILE,
+      srcChainId: getTronChainId('nile'),
       dstChainId: config.dst.ChainId,
       resolverAddress: config.src.ResolverContractAddress,
       srcTimestamp: BigInt(Math.floor(Date.now() / 1000)),
@@ -94,7 +95,7 @@ async function createTronOrderExample() {
       srcTokenAddress: config.src.USDT,
       dstTokenAddress: config.dst.BLT,
       secret: "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba",
-      srcChainId: CHAIN_IDS.TRON_NILE,
+      srcChainId: getTronChainId('nile'),
       dstChainId: config.dst.ChainId,
       resolverAddress: config.src.ResolverContractAddress,
       srcTimestamp: BigInt(Math.floor(Date.now() / 1000)),
@@ -123,7 +124,7 @@ async function createInvalidOrderExample() {
       srcTokenAddress: config.src.USDT,
       dstTokenAddress: config.dst.BLT,
       secret: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-      srcChainId: CHAIN_IDS.TRON_NILE,
+      srcChainId: getTronChainId('nile'),
       dstChainId: config.dst.ChainId,
       resolverAddress: config.src.ResolverContractAddress,
       srcTimestamp: BigInt(Math.floor(Date.now() / 1000)),
