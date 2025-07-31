@@ -2,6 +2,11 @@
  * TRON utility functions
  */
 
+const {TronWeb} = require('tronweb');
+const _tronWeb = new TronWeb({
+    fullHost: 'https://api.trongrid.io',
+});
+
 /**
  * Converts a TRON address to hex format
  * @param {string} tronAddress - The TRON address to convert
@@ -17,40 +22,32 @@ export function tronAddressToHex(tronAddress) {
     return tronAddress;
   }
 
-  // If it's a TRON address (starts with 'T'), convert to hex
-  if (tronAddress.startsWith('T')) {
-    // This is a simplified conversion - you may need a proper TRON address converter
-    // For now, we'll return the address as is and let the SDK handle it
-    // TODO: Implement proper TRON address to hex conversion
-    return tronAddress;
+  if (!_tronWeb.isAddress(tronAddress)) {
+    throw new Error('Invalid Tron Base58 address provided.');
   }
 
-  return tronAddress;
+  const hex = _tronWeb.address.toHex(tronAddress);
+  return `0x${hex.slice(2)}`;
 }
 
 /**
- * Validates if an address is a valid TRON address
+ * Validates if an address is a valid Base54 TRON address
  * @param {string} address - The address to validate
- * @returns {boolean} True if valid TRON address
+ * @returns {boolean} True if valid Base54 TRON address
  */
-export function isValidTronAddress(address) {
-  if (!address || typeof address !== 'string') {
-    return false;
-  }
+export function isValidBase54TronAddress(address) {
+    if (!address || typeof address !== 'string') {
+      return false;
+    }
+  
+    if (!_tronWeb.isAddress(tronAddress)) {
+        return false;
+    }
 
-  // TRON addresses start with 'T' and are 34 characters long
-  if (address.startsWith('T') && address.length === 34) {
     return true;
-  }
-
-  // Hex addresses should be 42 characters long (including 0x)
-  if (address.startsWith('0x') && address.length === 42) {
-    return true;
-  }
-
-  return false;
 }
 
+  
 /**
  * Gets the appropriate chain ID for TRON networks
  * @param {string} network - Network name ('mainnet' or 'nile')
