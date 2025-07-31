@@ -27,7 +27,7 @@ export function tronAddressToHex(tronAddress) {
   }
 
   const hex = _tronWeb.address.toHex(tronAddress);
-  return `0x${hex.slice(2)}`;
+  return `0x${hex.slice(2)}`; // Remove '41' prefix and add 0x prefix
 }
 
 /**
@@ -35,16 +35,8 @@ export function tronAddressToHex(tronAddress) {
  * @param {string} address - The address to validate
  * @returns {boolean} True if valid Base54 TRON address
  */
-export function isValidBase54TronAddress(address) {
-    if (!address || typeof address !== 'string') {
-      return false;
-    }
-  
-    if (!_tronWeb.isAddress(tronAddress)) {
-        return false;
-    }
-
-    return true;
+export function isValidBase58TronAddress(address) {
+    return typeof address === 'string' && TronWeb.isAddress(address);
 }
 
   
