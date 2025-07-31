@@ -1,5 +1,6 @@
 const { Signature } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
+const { readFileSync } = require("fs");
 const { ethers } = require("ethers");
 
 // Load the ABI
@@ -7,11 +8,11 @@ const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
 const contractABI = abiData.abi;
 
 class Resolver {
-  constructor(srcAddress, lopAddress, tronWeb) {
+  constructor(srcAddress, lopAddress, contractAddress, tronWeb) {
     this.srcAddress = srcAddress;
     this.lopAddress = lopAddress;
+    this.contractAddress = contractAddress;
     this.tronWeb = tronWeb;
-    this.contract = await this.tronWeb.contract(contractABI, contractAddress);
   }
 
   async deploySrc(
@@ -22,6 +23,8 @@ class Resolver {
     amount,
     hashLock = order.escrowExtension.hashLockInfo
   ) {
+    const contract = await this.tronWeb.contract(contractABI, this.contractAddress);
+
     const { r, yParityAndS: vs } = Signature.from(signature);
     const { args, trait } = takerTraits.encode();
     const immutables = order.toSrcImmutables(
@@ -35,7 +38,7 @@ class Resolver {
 
     const value = order.escrowExtension.srcSafetyDeposit
 
-    const tx = await this.contract.deploySrc(
+    const tx = await contract.deploySrc(
       immutables,
       order.build(),
       r,
