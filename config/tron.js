@@ -1,7 +1,7 @@
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
 
-const config = {
+export const config = {
     // [TRON] Swap Source Network Configuration
     src: {
         LOP: "0x0656e98bf5b9457048b8ac0985cb48b1b6def4ac", // "TAYjAyuKjKvkhkcvgJ7CgrJ8PVziU5vr4R",
@@ -31,5 +31,3 @@ const config = {
         ResolverPrivateKey: process.env.BASE_DST_RESOLVER_PRIVATE_KEY,
     },
 };
-
-module.exports = {config};
