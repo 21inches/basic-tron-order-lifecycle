@@ -3,7 +3,7 @@ const { parseEther } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
 const { UINT_40_MAX } = require("@1inch/byte-utils");
 const { Address } = Sdk;
-const { tronAddressToHex } = require("./utils/tron.js");
+const { tronAddressToHex } = require("./utils/tron.cjs");
 
 // Chain IDs
 const CHAIN_IDS = {
