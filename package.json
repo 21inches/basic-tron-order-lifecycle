@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "tronweb": "^6.0.4"
   },
