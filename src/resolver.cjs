@@ -8,10 +8,9 @@ const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
 const contractABI = abiData.abi;
 
 class Resolver {
-  constructor(srcAddress, lopAddress, contractAddress, tronWeb) {
-    this.srcAddress = srcAddress;
+  constructor(srcResolverAddress, lopAddress, tronWeb) {
+    this.srcResolverAddress = srcResolverAddress;
     this.lopAddress = lopAddress;
-    this.contractAddress = contractAddress;
     this.tronWeb = tronWeb;
   }
 
@@ -23,13 +22,13 @@ class Resolver {
     amount,
     hashLock = order.escrowExtension.hashLockInfo
   ) {
-    const contract = await this.tronWeb.contract(contractABI, this.contractAddress);
+    const contract = await this.tronWeb.contract(contractABI, this.srcResolverAddress);
 
     const { r, yParityAndS: vs } = Signature.from(signature);
     const { args, trait } = takerTraits.encode();
     const immutables = order.toSrcImmutables(
       chainId,
-      new Sdk.Address(this.srcAddress),
+      new Sdk.Address(this.srcResolverAddress),
       amount,
       hashLock
     ).build();
