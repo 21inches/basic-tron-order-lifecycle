@@ -53,8 +53,8 @@ async function createOrder(
       }),
       srcChainId,
       dstChainId,
-      srcSafetyDeposit: parseUnits("0.001", 6),
-      dstSafetyDeposit: parseUnits("0.001", 6),
+      srcSafetyDeposit: parseUnits("1", 6),
+      dstSafetyDeposit: parseUnits("1", 6),
     },
     {
       auction: new Sdk.AuctionDetails({
