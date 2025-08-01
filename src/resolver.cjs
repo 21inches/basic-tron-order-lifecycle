@@ -1,7 +1,6 @@
-const { Signature } = require("ethers");
+const { Signature, ethers } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
 const { readFileSync } = require("fs");
-const { ethers } = require("ethers");
 
 // Load the ABI
 const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
@@ -32,7 +31,6 @@ class Resolver {
     // Check if contract exists on the network
     try {
       const contractInfo = await this.tronWeb.trx.getContract(tronAddress);
-      console.log("🔍 Contract info:", contractInfo);
       if (!contractInfo || !contractInfo.bytecode) {
         throw new Error(`Contract not found at address ${tronAddress}`);
       }
