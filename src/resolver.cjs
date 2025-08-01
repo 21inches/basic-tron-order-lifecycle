@@ -40,12 +40,6 @@ class Resolver {
     }
     
     const contract = await this.tronWeb.contract(contractABI, tronAddress);
-    console.log("🔍 Contract instance:", !!contract);
-    console.log("🔍 Contract address in instance:", contract.address);
-    
-    // Fix: Explicitly set the contract address
-    contract.address = tronAddress;
-    console.log("🔍 Contract address after fix:", contract.address);
 
     const { r, yParityAndS: vs } = Signature.from(signature);
     const { args, trait } = takerTraits.encode();
