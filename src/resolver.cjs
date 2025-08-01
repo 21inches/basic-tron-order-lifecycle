@@ -103,7 +103,7 @@ class Resolver {
     ).call();
     console.log("🔍 Address of Escrow Src:", addressOfEscrowSrctx);
 
-    const tx = await contract.deploySrc3(
+    const tx = await contract.deploySrc(
       immutables,
       orderArray,
       r,
