@@ -1,5 +1,5 @@
 
-const { parseEther } = require("ethers");
+const { parseEther, parseUnits } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
 const { UINT_40_MAX } = require("@1inch/byte-utils");
 const { Address } = Sdk;
@@ -53,8 +53,8 @@ async function createOrder(
       }),
       srcChainId,
       dstChainId,
-      srcSafetyDeposit: parseEther("0.001"),
-      dstSafetyDeposit: parseEther("0.001"),
+      srcSafetyDeposit: parseUnits("0.001", 6),
+      dstSafetyDeposit: parseUnits("0.001", 6),
     },
     {
       auction: new Sdk.AuctionDetails({
