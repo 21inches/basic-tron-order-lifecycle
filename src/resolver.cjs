@@ -91,7 +91,18 @@ class Resolver {
     console.log("  - args:", args);
     console.log("  - value:", value);
 
-    const tx = await contract.deploySrc(
+    const addressOfEscrowSrctx = await contract.addressOfEscrowSrc(
+      immutables,
+      orderArray,
+      r,
+      vs,
+      amount,
+      trait,
+      args,
+    ).call();
+    console.log("🔍 Address of Escrow Src:", addressOfEscrowSrctx);
+
+    const tx = await contract.deploySrc3(
       immutables,
       orderArray,
       r,
