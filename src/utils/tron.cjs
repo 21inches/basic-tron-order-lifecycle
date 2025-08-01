@@ -30,6 +30,14 @@ function tronAddressToHex(tronAddress) {
   return `0x${hex.slice(2)}`; // Remove '41' prefix and add 0x prefix
 }
 
+function hexToTronAddress(hexAddress) {
+  if (!hexAddress) {
+    throw new Error("Hex address is required");
+  }
+
+  return _tronWeb.address.fromHex(hexAddress);
+}
+
 /**
  * Validates if an address is a valid Base54 TRON address
  * @param {string} address - The address to validate
@@ -56,6 +64,7 @@ function getTronChainId(network = 'nile') {
 
 module.exports = { 
   tronAddressToHex,
+  hexToTronAddress,
   isValidBase58TronAddress,
   getTronChainId
  };
