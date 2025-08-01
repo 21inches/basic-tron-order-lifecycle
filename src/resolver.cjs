@@ -22,24 +22,86 @@ class Resolver {
     amount,
     hashLock = order.escrowExtension.hashLockInfo
   ) {
-    const contract = await this.tronWeb.contract(contractABI, this.srcResolverAddress);
+    console.log("🔍 Contract address (hex):", this.srcResolverAddress);
+    console.log("🔍 TronWeb instance:", !!this.tronWeb);
+    
+    // Convert hex address to TRON format for TronWeb
+    const tronAddress = this.tronWeb.address.fromHex(this.srcResolverAddress);
+    console.log("🔍 Contract address (TRON):", tronAddress);
+    
+    // Check if contract exists on the network
+    try {
+      const contractInfo = await this.tronWeb.trx.getContract(tronAddress);
+      console.log("🔍 Contract info:", contractInfo);
+      if (!contractInfo || !contractInfo.bytecode) {
+        throw new Error(`Contract not found at address ${tronAddress}`);
+      }
+    } catch (error) {
+      console.error("🔍 Error checking contract:", error.message);
+      throw new Error(`Contract not deployed or not found at address ${tronAddress}`);
+    }
+    
+    const contract = await this.tronWeb.contract(contractABI, tronAddress);
+    console.log("🔍 Contract instance:", !!contract);
+    console.log("🔍 Contract address in instance:", contract.address);
+    
+    // Fix: Explicitly set the contract address
+    contract.address = tronAddress;
+    console.log("🔍 Contract address after fix:", contract.address);
 
     const { r, yParityAndS: vs } = Signature.from(signature);
     const { args, trait } = takerTraits.encode();
-    const immutables = order.toSrcImmutables(
+    
+    // Get the immutables from the order
+    const orderImmutables = order.toSrcImmutables(
       chainId,
       new Sdk.Address(this.srcResolverAddress),
       amount,
       hashLock
     ).build();
+    
     const hash = this.hashOrder(chainId, order);
-    immutables.orderHash = hash;
+    
+    // Pass immutables as an array instead of an object
+    const immutables = [
+      hash, // orderHash
+      orderImmutables.hashlock, // hashlock
+      orderImmutables.maker, // maker
+      orderImmutables.taker, // taker
+      orderImmutables.token, // token
+      orderImmutables.amount, // amount
+      orderImmutables.safetyDeposit, // safetyDeposit
+      orderImmutables.timelocks // timelocks
+    ];
+
+    // Get order as object and convert to array
+    const orderObj = order.build();
+    const orderArray = [
+      orderObj.salt,
+      orderObj.maker,
+      orderObj.receiver,
+      orderObj.makerAsset,
+      orderObj.takerAsset,
+      orderObj.makingAmount,
+      orderObj.takingAmount,
+      orderObj.makerTraits
+    ];
 
     const value = order.escrowExtension.srcSafetyDeposit
 
+    console.log("🔍 About to call deploySrc with:");
+    console.log("  - immutables:", immutables);
+    console.log("  - orderArray:", orderArray);
+    console.log("  - r:", r);
+    console.log("  - vs:", vs);
+    console.log("  - amount:", amount);
+    console.log("  - trait:", trait);
+    console.log("  - args:", args);
+    console.log("  - value:", value);
+
     const tx = await contract.deploySrc(
       immutables,
-      order.build(),
+      orderArray,
       r,
       vs,
       amount,
