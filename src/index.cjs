@@ -29,12 +29,14 @@ async function main() {
     // get User(maker) address
     const srcChainUserAddress = tronWeb.address.fromPrivateKey(config.src.UserPrivateKey);
 
-    // create order
-    console.log("Creating order...");
+    // create order with fresh timestamp and salt
+    console.log("Creating new order with fresh parameters...");
     const makingAmount = parseUnits("0.001", 6);
     const takingAmount = parseUnits("0.001", 6);
     const secret = "0x0000000000000000000000000000000000000000000000000000000000000000";
     const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
+    
+    // Create a new order with fresh parameters
     const order = await createOrder(
       config.src.EscrowFactory,
       srcChainUserAddress,
@@ -48,7 +50,8 @@ async function main() {
       config.src.ResolverContractAddress,
       srcTimestamp
   );
-  console.log("Order created", order.build());
+  console.log("New order created with salt:", order.salt.toString());
+  console.log("Order details:", order.build());
 
   // sign order
   const typedData = order.getTypedData(config.src.ChainId);
@@ -65,11 +68,10 @@ async function main() {
 
   const hashStripped = hash.replace(/^0x/, '');
   const signature = await tronWeb.trx.sign(hashStripped);
-  console.log("Signature", signature);
-
+  console.log("Signature generated for new order");
 
   // fill order
-  console.log("Filling order...");
+  console.log("Filling new order...");
   const fillOrder = await resolver.deploySrc(
     config.src.ChainId,
     order,
@@ -80,7 +82,7 @@ async function main() {
           .setAmountThreshold(order.takingAmount),
     order.makingAmount
   )
-  console.log("Order filled", fillOrder);
+  console.log("Order filled successfully:", fillOrder);
 }
 
 main();
