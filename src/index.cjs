@@ -10,6 +10,7 @@ const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
 const { Address } = Sdk;
+const { Wallet } = require("./wallet.js");
 
 // Use Nile testnet
 const tronWeb = new TronWeb({
@@ -24,6 +25,10 @@ const resolver = new Resolver(
   tronWeb
 );
 
+const EvmChainUser = new Wallet(
+  config.src.UserPrivateKey, 
+  new JsonRpcProvider(config.dst.RpcUrl)
+);
 
 async function main() {
     // get User(maker) address
@@ -54,21 +59,7 @@ async function main() {
   console.log("Order details:", order.build());
 
   // sign order
-  const typedData = order.getTypedData(config.src.ChainId);
-  const domain = {
-      name: '1inch Limit Order Protocol',
-      version: '4',
-      chainId: config.src.ChainId,
-      verifyingContract: config.src.LOP
-  };
-
-  const hash = TypedDataEncoder.hash(domain, {
-      Order: typedData.types[typedData.primaryType],
-  }, typedData.message);
-
-  const hashStripped = hash.replace(/^0x/, '');
-  const signature = await tronWeb.trx.sign(hashStripped);
-  console.log("Signature generated for new order");
+  const signature = await EvmChainUser.signOrder(config.src.ChainId, order, config.src.LOP);
 
   // fill order
   console.log("Filling new order...");
