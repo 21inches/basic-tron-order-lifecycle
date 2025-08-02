@@ -7,19 +7,15 @@ const { JsonRpcProvider } = require("ethers");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
 const { Address } = Sdk;
-
-//configs
 const { config } = require("../config/tron.js");
-
-// contracts
 const { TronResolver } = require("./contracts/tron-resolver.cjs");
+const {TronEscrowFactory} = require("./contracts/tron-escrow-factory.js");
 const { EvmResolver } = require("./contracts/evm-resolver.cjs");
-
-// wallets
+const {EvmEscrowFactory} = require("./contracts/evm-escrow-factory.js");
 const { EVMWallet } = require("./wallet/evm.js");
-
-// Indexer
 const { TronIndexer } = require("./indexer/tron.js");
+
+
 
 // Use Nile testnet
 const tronWeb = new TronWeb({
@@ -28,6 +24,8 @@ const tronWeb = new TronWeb({
     privateKey: config.src.ResolverPrivateKey,
   });
 
+
+// Create resolver instance for both chains
 const tronResolver = new TronResolver(
   config.src.ResolverContractAddress,
   config.src.LOP,
@@ -38,26 +36,41 @@ const evmResolver = new EvmResolver(
   config.dst.ResolverContractAddress
 )
 
+// Create TronIndexer instance
 const tronIndexer = new TronIndexer(process.env.TRONGRID_API_KEY, 'nile');
 
-const EvmChainUser = new EVMWallet(
+// Create EVM wallets for user and resolver
+const EvmUserWallet = new EVMWallet(
   config.src.UserPrivateKey,
   new JsonRpcProvider(config.dst.RpcUrl)
 );
 
-const EvmChainResolver = new EVMWallet(
+const EvmResolverWallet = new EVMWallet(
   config.dst.ResolverPrivateKey,
   new JsonRpcProvider(config.dst.RpcUrl)
 );
 
+// Create escrow factory instances for both chains
+const srcEscrowFactory = new TronEscrowFactory(
+  config.src.EscrowFactory,
+  tronWeb
+);
+
+const dstEscrowFactory = new EvmEscrowFactory(
+  new JsonRpcProvider(config.dst.RpcUrl),
+  config.dst.EscrowFactory,
+);
+
 async function main() {
+    await srcEscrowFactory.init();
+
     // get User(maker) address
     const srcChainUserAddress = tronWeb.address.fromPrivateKey(config.src.UserPrivateKey);
 
     // create order with fresh timestamp and salt
     console.log("Creating new order with fresh parameters...");
     const makingAmount = parseUnits("1.432", 6);
-    const takingAmount = parseUnits("1.234", 18);
+    const takingAmount = parseUnits("1.234", 10);
     const secret = "0x0000000000000000000000000000000000000000000000000000000000000000";
     const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
@@ -79,7 +92,7 @@ async function main() {
   console.log("Order details:", order.build());
 
   // sign order by user
-  const signature = await EvmChainUser.signOrder(config.src.ChainId, order, config.src.LOP);
+  const signature = await EvmUserWallet.signOrder(config.src.ChainId, order, config.src.LOP);
 
   // fill order
   console.log("Filling order...");
@@ -107,8 +120,52 @@ async function main() {
 
   console.log("Deploying dst escrow...");
   const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } =
-    await EvmChainResolver.send(evmResolver.deployDst(dstImmutables));
+    await EvmResolverWallet.send(evmResolver.deployDst(dstImmutables));
   console.log("Dst escrow deployed", dstDepositHash);
+
+
+  console.log("Getting escrow addresses...");
+  const ESCROW_SRC_IMPLEMENTATION = await srcEscrowFactory.getSourceImpl();
+  const ESCROW_DST_IMPLEMENTATION = await dstEscrowFactory.getDestinationImpl();
+  const srcEscrowAddress = new Sdk.EscrowFactory(
+    new Address(config.src.EscrowFactory)
+  ).getSrcEscrowAddress(immutables, ESCROW_SRC_IMPLEMENTATION);
+
+  const dstEscrowAddress = new Sdk.EscrowFactory(
+    new Address(config.dst.EscrowFactory)
+  ).getDstEscrowAddress(
+    immutables,
+    complement,
+    dstDeployedAt,
+    new Address(config.dst.ResolverContractAddress),
+    ESCROW_DST_IMPLEMENTATION
+  );
+  console.log("Escrow addresses fetched");
+
+  console.log("Src escrow address", srcEscrowAddress);
+  console.log("Dst escrow address", dstEscrowAddress);
+
+  console.log("Withdrawing from dst escrow for user in 20secs...");
+  await new Promise((resolve) => setTimeout(resolve, 20000));
+  const { txHash: dstWithdrawHash } = await EvmResolverWallet.send(
+    evmResolver.withdraw(
+      "dst",
+      dstEscrowAddress,
+      secret,
+      dstImmutables.withDeployedAt(dstDeployedAt)
+    )
+  );
+  console.log("Dst escrow withdrawn", dstWithdrawHash);
+
+  console.log("Withdrawing from src escrow for resolver...");
+  // For TRON chain, we need to use the TRON resolver directly
+  const { txHash: resolverWithdrawHash } = await tronResolver.withdraw(
+    "src",
+    srcEscrowAddress,
+    secret,
+    immutables
+  );
+  console.log("Src escrow withdrawn", resolverWithdrawHash);
 }
 
 main();

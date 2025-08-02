@@ -137,6 +137,22 @@ class TronResolver {
       typedData.message
     );
   }
+
+  async withdraw(side, escrow, secret, immutables) {
+    // Convert hex address to TRON format for TronWeb
+    const tronAddress = hexToTronAddress(this.ResolverAddress);
+    const contract = await this.tronWeb.contract(contractABI, tronAddress);
+
+    const tx = await contract.withdraw(
+      escrow.toString(),
+      secret,
+      immutables.build()
+    ).send();
+
+    return {
+      txHash: tx
+    };
+  }
 }
 
 module.exports = { TronResolver };

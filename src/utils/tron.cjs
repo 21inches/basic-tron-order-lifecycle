@@ -30,6 +30,28 @@ function tronAddressToHex(tronAddress) {
   return `0x${hex.slice(2)}`; // Remove '41' prefix and add 0x prefix
 }
 
+function removePrefix(hexStr) {
+  hexStr = hexStr.toLowerCase();
+
+  if (hexStr.startsWith("0x")) {
+    // Check if it's a valid Ethereum address (40 hex characters after '0x')
+    if (/^0x[a-f0-9]{40}$/.test(hexStr)) {
+      return hexStr;
+    } else {
+      throw new Error("Invalid Ethereum address format");
+    }
+  } else if (hexStr.startsWith("41")) {
+    // Check if it's a valid Tron address (42 hex characters starting with '41')
+    if (/^41[a-f0-9]{40}$/.test(hexStr)) {
+      return "0x" + hexStr.slice(2);
+    } else {
+      throw new Error("Invalid Tron address format");
+    }
+  } else {
+    throw new Error("Unrecognized address format");
+  }
+}
+
 function hexToTronAddress(hexAddress) {
   if (!hexAddress) {
     throw new Error("Hex address is required");
@@ -66,5 +88,6 @@ module.exports = {
   tronAddressToHex,
   hexToTronAddress,
   isValidBase58TronAddress,
-  getTronChainId
+  getTronChainId,
+  removePrefix
  };

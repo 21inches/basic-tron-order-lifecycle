@@ -1,4 +1,6 @@
-const { hexToTronAddress } = require("./tron.cjs");
+const Sdk = require("@1inch/cross-chain-sdk");
+const { hexToTronAddress, removePrefix } = require("./tron.cjs");
+const { Address } = Sdk;
 
 let hex;
 let shouldBe;
@@ -28,3 +30,11 @@ shouldBe = "TAYjAyuKjKvkhkcvgJ7CgrJ8PVziU5vr4R";
 hex = "410656e98bf5b9457048b8ac0985cb48b1b6def4ac";
 console.log(hexToTronAddress(hex));
 console.log(hexToTronAddress(hex) === shouldBe);
+
+console.log("------- Remove Prefix --------------");
+let res = "41810deb8c21a11f0f10977378d403c995480c2b8c";
+let ans = removePrefix(res)
+console.log(ans);
+console.log(ans === "0x810deb8c21a11f0f10977378d403c995480c2b8c");
+let address = new Address(ans);
+console.log(address);
