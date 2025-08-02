@@ -3,7 +3,7 @@ dotenv.config();
 
 const Sdk = require("@1inch/cross-chain-sdk");
 const { parseUnits } = require("ethers");
-const { Resolver } = require("./resolver.cjs");
+const { Resolver } = require("./contracts/resolver.cjs");
 const { JsonRpcProvider } = require("ethers");
 const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
@@ -24,7 +24,7 @@ const resolver = new Resolver(
 );
 
 const EvmChainUser = new EVMWallet(
-  config.src.UserPrivateKey, 
+  config.src.UserPrivateKey,
   new JsonRpcProvider(config.dst.RpcUrl)
 );
 
@@ -38,7 +38,7 @@ async function main() {
     const takingAmount = parseUnits("3", 6);
     const secret = "0x0000000000000000000000000000000000000000000000000000000000000000";
     const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
-    
+
     // Create a new order with fresh parameters
     const order = await createOrder(
       config.src.EscrowFactory,

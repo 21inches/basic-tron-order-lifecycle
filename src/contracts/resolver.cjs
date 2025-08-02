@@ -1,7 +1,7 @@
 const { Signature, ethers } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
 const { readFileSync } = require("fs");
-const { hexToTronAddress, isValidTronHexAddress } = require("./utils/tron.cjs");
+const { hexToTronAddress, isValidTronHexAddress } = require("../utils/tron.cjs");
 
 // Load the ABI
 const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
