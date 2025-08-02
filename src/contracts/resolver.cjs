@@ -15,7 +15,7 @@ class Resolver {
     this.tronWeb = tronWeb;
   }
 
-  async deploySrc(
+  async deploySrcOnTron(
     chainId,
     order,
     signature,
