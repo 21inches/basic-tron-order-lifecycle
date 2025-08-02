@@ -14,7 +14,8 @@ const { EvmResolver } = require("./contracts/evm-resolver.cjs");
 const {EvmEscrowFactory} = require("./contracts/evm-escrow-factory.js");
 const { EVMWallet } = require("./wallet/evm.js");
 const { TronIndexer } = require("./indexer/tron.js");
-
+const { getTronCreate2Address } = require("./utils/create2-address.cjs");
+const { hexToTronAddress, removePrefix } = require("./utils/tron.cjs");
 
 
 // Use Nile testnet
@@ -127,10 +128,10 @@ async function main() {
   console.log("Getting escrow addresses...");
   const ESCROW_SRC_IMPLEMENTATION = await srcEscrowFactory.getSourceImpl();
   const ESCROW_DST_IMPLEMENTATION = await dstEscrowFactory.getDestinationImpl();
-  const srcEscrowAddress = new Sdk.EscrowFactory(
-    new Address(config.src.EscrowFactory)
-  ).getSrcEscrowAddress(immutables, ESCROW_SRC_IMPLEMENTATION);
-
+  // const srcEscrowAddress = new Sdk.EscrowFactory(
+  //   new Address(config.src.EscrowFactory)
+  // ).getSrcEscrowAddress(immutables, ESCROW_SRC_IMPLEMENTATION);
+  const srcEscrowAddress = getTronCreate2Address(config.src.EscrowFactory, immutables.orderHash, ESCROW_SRC_IMPLEMENTATION.toString())
   const dstEscrowAddress = new Sdk.EscrowFactory(
     new Address(config.dst.EscrowFactory)
   ).getDstEscrowAddress(
@@ -143,7 +144,8 @@ async function main() {
   console.log("Escrow addresses fetched");
 
   console.log("Src escrow address", srcEscrowAddress);
-  console.log("Dst escrow address", dstEscrowAddress);
+  console.log("Src escrow Tron address", hexToTronAddress(srcEscrowAddress));
+  console.log("Dst escrow address", dstEscrowAddress.toString());
 
   console.log("Withdrawing from dst escrow for user in 20secs...");
   await new Promise((resolve) => setTimeout(resolve, 20000));
@@ -161,7 +163,7 @@ async function main() {
   // For TRON chain, we need to use the TRON resolver directly
   const { txHash: resolverWithdrawHash } = await tronResolver.withdraw(
     "src",
-    srcEscrowAddress,
+    removePrefix(srcEscrowAddress),
     secret,
     immutables
   );
