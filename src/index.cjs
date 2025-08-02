@@ -10,8 +10,10 @@ const { Address } = Sdk;
 
 //configs
 const { config } = require("../config/tron.js");
+
 // contracts
 const { TronResolver } = require("./contracts/tron-resolver.cjs");
+const { EvmResolver } = require("./contracts/evm-resolver.cjs");
 
 // wallets
 const { EVMWallet } = require("./wallet/evm.js");
@@ -31,11 +33,20 @@ const tronResolver = new TronResolver(
   config.src.LOP,
   tronWeb
 );
+const evmResolver = new EvmResolver(
+  config.src.ResolverContractAddress,
+  config.dst.ResolverContractAddress
+)
 
 const tronIndexer = new TronIndexer(process.env.TRONGRID_API_KEY, 'nile');
 
 const EvmChainUser = new EVMWallet(
   config.src.UserPrivateKey,
+  new JsonRpcProvider(config.dst.RpcUrl)
+);
+
+const EvmChainResolver = new EVMWallet(
+  config.dst.ResolverPrivateKey,
   new JsonRpcProvider(config.dst.RpcUrl)
 );
 
@@ -88,14 +99,15 @@ async function main() {
 
   console.log("Fetching src escrow event...");
   const [immutables, complement] = await tronIndexer.waitForSrcEscrowCreatedEvent(orderFillHash);
+
+  console.log("Creating dst escrow immutables");
   const dstImmutables = immutables
     .withComplement(complement)
-    .withTaker(new Address(tronResolver.dstResolverAddress));
-  console.log("Src escrow event fetched");
+    .withTaker(new Address(config.dst.ResolverContractAddress));
 
   console.log("Deploying dst escrow...");
   const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } =
-    await dstChainResolver.send(resolverContract.deployDst(dstImmutables));
+    await EvmChainResolver.send(evmResolver.deployDst(dstImmutables));
   console.log("Dst escrow deployed", dstDepositHash);
 }
 
