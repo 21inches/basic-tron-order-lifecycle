@@ -9,6 +9,8 @@ const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
 const { EVMWallet } = require("./wallet/evm.js");
+const {EscrowFactory} = require("./contracts/escrow-factory");
+const { Address } = Sdk;
 
 // Use Nile testnet
 const tronWeb = new TronWeb({
@@ -19,7 +21,13 @@ const tronWeb = new TronWeb({
 
 const resolver = new Resolver(
   config.src.ResolverContractAddress,
+  config.dst.ResolverContractAddress,
   config.src.LOP,
+  tronWeb
+);
+
+const srcEscrowFactory = new EscrowFactory(
+  config.src.EscrowFactory,
   tronWeb
 );
 
@@ -60,18 +68,29 @@ async function main() {
   const signature = await EvmChainUser.signOrder(config.src.ChainId, order, config.src.LOP);
 
   // fill order
-  console.log("Filling new order...");
-  const fillOrder = await resolver.deploySrc(
-    config.src.ChainId,
-    order,
-    signature,
-    Sdk.TakerTraits.default()
-          .setExtension(order.extension)
-          .setAmountMode(Sdk.AmountMode.maker)
-          .setAmountThreshold(order.takingAmount),
-    order.makingAmount
+  console.log("Filling order...");
+  const { txHash: orderFillHash, blockHash: srcDeployBlock } =
+    await resolver.deploySrc(
+      config.src.ChainId,
+      order,
+      signature,
+      Sdk.TakerTraits.default()
+        .setExtension(order.extension)
+        .setAmountMode(Sdk.AmountMode.maker)
+        .setAmountThreshold(order.takingAmount),
+      order.makingAmount
   )
-  console.log("Order filled successfully:", fillOrder);
+  console.log("Order filled", orderFillHash);
+
+
+  console.log("Fetching src escrow event...");
+  const srcEscrowEvent = await srcEscrowFactory.getSrcDeployEvent(
+    srcDeployBlock
+  );
+  const dstImmutables = srcEscrowEvent[0]
+    .withComplement(srcEscrowEvent[1])
+    .withTaker(new Address(resolver.dstResolverAddress));
+  console.log("Src escrow event fetched");
 }
 
 main();

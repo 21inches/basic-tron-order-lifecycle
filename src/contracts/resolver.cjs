@@ -117,7 +117,15 @@ class Resolver {
     });
 
     console.log("🔍 Transaction sent successfully:", tx);
-    return tx;
+    
+    // Get transaction info to extract block hash
+    const txInfo = await this.tronWeb.trx.getTransactionInfo(tx);
+    const blockHash = txInfo.blockHash;
+    
+    return {
+      txHash: tx,
+      blockHash: blockHash
+    };
   }
 
   hashOrder(srcChainId, order) {
