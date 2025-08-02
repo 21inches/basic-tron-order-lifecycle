@@ -32,17 +32,18 @@ class TronEscrowFactory {
   }
 
   async addressOfEscrowSrc(immutables) {
-    const immutablesTuple = [
-      immutables.orderHash,
-      immutables.hashLock.value,
-      immutables.maker.val,
-      immutables.taker.val,
-      immutables.token.val,
-      immutables.amount,
-      immutables.safetyDeposit,
-      immutables.timeLocks.toSrcTimeLocks().privateCancellation // Use the proper encoding method
+    const ib = immutables.build();
+    const immutablesArg = [
+      ib.orderHash,
+      ib.hashlock,
+      ib.maker,
+      ib.taker,
+      ib.token,
+      ib.amount,
+      ib.safetyDeposit,
+      ib.timelocks
     ];
-    const res = await this.contract.addressOfEscrowSrc(immutablesTuple).call();
+    const res = await this.contract.addressOfEscrowSrc(immutablesArg).call();
     const escrowAddress = removePrefix(res)
     return new Address(escrowAddress);
   }
