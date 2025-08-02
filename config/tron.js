@@ -26,8 +26,8 @@ export const config = {
         EscrowDstImplementationAddress: "0x7490329e69ab8e298a32dc59493034e4d02a5ccf",
         TrueERC20: "0x6dFe5DA3C989aB142CfB16a8FfA2B0e640b1d821",
         ChainId: 11155111,
-        UserPrivateKey: process.env.SRC_USER_PRIVATE_KEY,
+        UserPrivateKey: process.env.SEPOLIA_DST_USER_PRIVATE_KEY,
         RpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
-        ResolverPrivateKey: process.env.SRC_RESOLVER_PRIVATE_KEY,
+        ResolverPrivateKey: process.env.SEPOLIA_DST_RESOLVER_PRIVATE_KEY,
     }
 };
