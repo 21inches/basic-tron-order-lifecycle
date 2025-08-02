@@ -142,7 +142,7 @@ async function main() {
   console.log("Src escrow Tron address", hexToTronAddress(srcEscrowAddress.toString()));
   console.log("Dst escrow address", dstEscrowAddress.toString());
 
-  console.log("Withdrawing from dst escrow for user in 20secs...");
+  console.log("Withdrawing from dst escrow for user in 10secs...");
   await new Promise((resolve) => setTimeout(resolve, 10000));
   const { txHash: dstWithdrawHash } = await EvmResolverWallet.send(
     evmResolver.withdraw(
