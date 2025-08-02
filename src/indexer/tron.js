@@ -34,62 +34,35 @@ class TronIndexer {
 
   async getSrcEscrowCreatedEventByTxId(txId) {
     const txInfo = await this.getTransactionInfo(txId);
-    
+
     if (txInfo && txInfo.log) {
       for (const log of txInfo.log) {
-        // Check if this log has the SrcEscrowCreated event signature
-        const srcEscrowCreatedTopic = "0e534c62f0afd2fa0f0fa71198e8aa2d549f24daf2bb47de0d5486c7ce9288ca";
-        
-        if (log.topics && log.topics[0] === srcEscrowCreatedTopic) {
-          // Manual decoding based on the event structure
-          const data = log.data;
-          
-          // Extract the parameters from the data
-          const srcImmutables = {
-            orderHash: "0x" + data.substring(2, 66),
-            hashlock: "0x" + data.substring(66, 130),
-            maker: BigInt("0x" + data.substring(130, 194).substring(24)), // Convert to BigInt
-            taker: BigInt("0x" + data.substring(194, 258).substring(24)), // Convert to BigInt
-            token: BigInt("0x" + data.substring(258, 322).substring(24)), // Convert to BigInt
-            amount: BigInt("0x" + data.substring(322, 386)),
-            safetyDeposit: BigInt("0x" + data.substring(386, 450)),
-            timelocks: BigInt("0x" + data.substring(450, 514))
+        try {
+          const ethersLog = {
+            topics: log.topics.map(topic => '0x' + topic),
+            data: '0x' + log.data
           };
-          
-          const dstImmutablesComplement = {
-            maker: BigInt("0x" + data.substring(514, 578).substring(24)), // Convert to BigInt
-            amount: BigInt("0x" + data.substring(578, 642)),
-            token: BigInt("0x" + data.substring(642, 706).substring(24)), // Convert to BigInt
-            safetyDeposit: BigInt("0x" + data.substring(706, 770)),
-            chainId: BigInt("0x" + data.substring(770, 834))
-          };
-          
-          const event = {
-            name: 'SrcEscrowCreated',
-            args: {
-              srcImmutables,
-              dstImmutablesComplement
-            },
-            raw: log
-          };
-          
-          // Convert to SDK format
-          return this.convertToSDK(event);
+
+          const parsedLog = this.iEscrowFactory.parseLog(ethersLog);
+          if (parsedLog && parsedLog.name === 'SrcEscrowCreated') {
+            const { srcImmutables, dstImmutablesComplement } = parsedLog.args;
+            return this.convertToSDK(srcImmutables, dstImmutablesComplement);
+          }
+        } catch (e) {
+          // Ignore errors in parsing logs
         }
       }
     }
-    
+
     return null;
   }
 
-  convertToSDK(event) {
-    if (!event || event.name !== 'SrcEscrowCreated') {
-      throw new Error('Invalid event: expected SrcEscrowCreated');
+  convertToSDK(srcImmutables, dstImmutablesComplement) {
+    if (!srcImmutables || !dstImmutablesComplement) {
+      throw new Error('Invalid event arguments for conversion');
     }
 
-    const srcImmutables = event.args.srcImmutables;
-    const dstImmutablesComplement = event.args.dstImmutablesComplement;
-
+    // **FIX 2: Use Sdk.Address.fromBigInt() because the ABI type is uint256 for addresses**
     return [
       Sdk.Immutables.new({
         orderHash: srcImmutables.orderHash,
@@ -130,7 +103,7 @@ class TronIndexer {
         
         // Wait before next check
         await new Promise(resolve => setTimeout(resolve, checkInterval));
-        
+
       } catch (error) {
         console.log(`⏳ Transaction not ready yet: ${error.message}`);
         await new Promise(resolve => setTimeout(resolve, checkInterval));
@@ -141,4 +114,4 @@ class TronIndexer {
   }
 }
 
-module.exports = { TronIndexer }; 
+module.exports = { TronIndexer };
