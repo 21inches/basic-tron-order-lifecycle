@@ -81,6 +81,64 @@ class TronIndexer {
     
     return null;
   }
+
+  convertToSDK(event) {
+    if (!event || event.name !== 'SrcEscrowCreated') {
+      throw new Error('Invalid event: expected SrcEscrowCreated');
+    }
+
+    const srcImmutables = event.args.srcImmutables;
+    const dstImmutablesComplement = event.args.dstImmutablesComplement;
+
+    return [
+      Sdk.Immutables.new({
+        orderHash: srcImmutables.orderHash,
+        hashLock: Sdk.HashLock.fromString(srcImmutables.hashlock),
+        maker: Sdk.Address.fromBigInt(srcImmutables.maker),
+        taker: Sdk.Address.fromBigInt(srcImmutables.taker),
+        token: Sdk.Address.fromBigInt(srcImmutables.token),
+        amount: srcImmutables.amount,
+        safetyDeposit: srcImmutables.safetyDeposit,
+        timeLocks: Sdk.TimeLocks.fromBigInt(srcImmutables.timelocks),
+      }),
+      Sdk.DstImmutablesComplement.new({
+        maker: Sdk.Address.fromBigInt(dstImmutablesComplement.maker),
+        amount: dstImmutablesComplement.amount,
+        token: Sdk.Address.fromBigInt(dstImmutablesComplement.token),
+        safetyDeposit: dstImmutablesComplement.safetyDeposit,
+        chainId: dstImmutablesComplement.chainId,
+      }),
+    ];
+  }
+
+
+  async waitForSrcEscrowCreatedEvent(txId, maxWaitTime = 10 * 60 * 1000) {
+    const startTime = Date.now();
+    const checkInterval = 2000; // Check every 2 seconds
+    
+    while (Date.now() - startTime < maxWaitTime) {
+      try {
+        // Try to get the event
+        const event = await this.getSrcEscrowCreatedEventByTxId(txId);
+        
+        if (event) {
+          console.log(`✅ SrcEscrowCreated event found after ${Date.now() - startTime}ms`);
+          return event;
+        }
+        
+        console.log(`⏳ Waiting for transaction to be mined... (${Date.now() - startTime}ms elapsed)`);
+        
+        // Wait before next check
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        
+      } catch (error) {
+        console.log(`⏳ Transaction not ready yet: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+      }
+    }
+    
+    throw new Error(`Timeout: Could not find SrcEscrowCreated event for transaction ${txId} after ${maxWaitTime}ms`);
+  }
 }
 
 module.exports = { TronIndexer }; 
