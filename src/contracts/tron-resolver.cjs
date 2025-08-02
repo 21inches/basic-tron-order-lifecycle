@@ -1,16 +1,15 @@
 const { Signature, ethers } = require("ethers");
 const Sdk = require("@1inch/cross-chain-sdk");
 const { readFileSync } = require("fs");
-const { hexToTronAddress, isValidTronHexAddress } = require("../utils/tron.cjs");
+const { hexToTronAddress } = require("../utils/tron.cjs");
 
 // Load the ABI
 const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
 const contractABI = abiData.abi;
 
-class Resolver {
-  constructor(srcResolverAddress, dstResolverAddress, lopAddress, tronWeb) {
-    this.srcResolverAddress = srcResolverAddress;
-    this.dstResolverAddress = dstResolverAddress;
+class TronResolver {
+  constructor(resolverAddress, lopAddress, tronWeb) {
+    this.ResolverAddress = resolverAddress;
     this.lopAddress = lopAddress;
     this.tronWeb = tronWeb;
   }
@@ -23,13 +22,9 @@ class Resolver {
     amount,
     hashLock = order.escrowExtension.hashLockInfo
   ) {
-    console.log("🔍 Contract address (hex):", this.srcResolverAddress);
-    console.log("🔍 TronWeb instance:", !!this.tronWeb);
-    
     // Convert hex address to TRON format for TronWeb
-    const tronAddress = this.tronWeb.address.fromHex(this.srcResolverAddress);
-    console.log("🔍 Contract address (TRON):", tronAddress);
-    
+    const tronAddress = hexToTronAddress(this.ResolverAddress);
+
     // Check if contract exists on the network
     try {
       const contractInfo = await this.tronWeb.trx.getContract(tronAddress);
@@ -49,7 +44,7 @@ class Resolver {
     // Get the immutables from the order
     const orderImmutables = order.toSrcImmutables(
       chainId,
-      new Sdk.Address(this.srcResolverAddress),
+      new Sdk.Address(this.ResolverAddress),
       amount,
       hashLock
     ).build();
@@ -144,4 +139,4 @@ class Resolver {
   }
 }
 
-module.exports = { Resolver };
+module.exports = { TronResolver };

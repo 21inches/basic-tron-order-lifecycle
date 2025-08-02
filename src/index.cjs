@@ -3,14 +3,21 @@ dotenv.config();
 
 const Sdk = require("@1inch/cross-chain-sdk");
 const { parseUnits } = require("ethers");
-const { Resolver } = require("./contracts/resolver.cjs");
 const { JsonRpcProvider } = require("ethers");
-const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
-const { EVMWallet } = require("./wallet/evm.js");
-const {EscrowFactory} = require("./contracts/escrow-factory");
 const { Address } = Sdk;
+
+//configs
+const { config } = require("../config/tron.js");
+// contracts
+const { TronResolver } = require("./contracts/tron-resolver.cjs");
+
+// wallets
+const { EVMWallet } = require("./wallet/evm.js");
+
+// Indexer
+const { TronIndexer } = require("./indexer/tron.js");
 
 // Use Nile testnet
 const tronWeb = new TronWeb({
@@ -19,17 +26,13 @@ const tronWeb = new TronWeb({
     privateKey: config.src.ResolverPrivateKey,
   });
 
-const resolver = new Resolver(
+const tronResolver = new TronResolver(
   config.src.ResolverContractAddress,
-  config.dst.ResolverContractAddress,
   config.src.LOP,
   tronWeb
 );
 
-const srcEscrowFactory = new EscrowFactory(
-  config.src.EscrowFactory,
-  tronWeb
-);
+const tronIndexer = new TronIndexer(process.env.TRONGRID_API_KEY, 'nile');
 
 const EvmChainUser = new EVMWallet(
   config.src.UserPrivateKey,
@@ -70,7 +73,7 @@ async function main() {
   // fill order
   console.log("Filling order...");
   const { txHash: orderFillHash, blockHash: srcDeployBlock } =
-    await resolver.deploySrc(
+    await tronResolver.deploySrcOnTron(
       config.src.ChainId,
       order,
       signature,
@@ -84,13 +87,16 @@ async function main() {
 
 
   console.log("Fetching src escrow event...");
-  const srcEscrowEvent = await srcEscrowFactory.getSrcDeployEvent(
-    srcDeployBlock
-  );
-  const dstImmutables = srcEscrowEvent[0]
-    .withComplement(srcEscrowEvent[1])
-    .withTaker(new Address(resolver.dstResolverAddress));
+  const [immutables, complement] = await tronIndexer.waitForSrcEscrowCreatedEvent(orderFillHash);
+  const dstImmutables = immutables
+    .withComplement(complement)
+    .withTaker(new Address(tronResolver.dstResolverAddress));
   console.log("Src escrow event fetched");
+
+  console.log("Deploying dst escrow...");
+  const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } =
+    await dstChainResolver.send(resolverContract.deployDst(dstImmutables));
+  console.log("Dst escrow deployed", dstDepositHash);
 }
 
 main();
