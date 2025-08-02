@@ -5,7 +5,8 @@
   "license": "ISC",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.cjs"
   },
   "dependencies": {
     "@1inch/cross-chain-sdk": "^0.1.15",
