@@ -53,8 +53,8 @@ async function createOrder(
       }),
       srcChainId,
       dstChainId,
-      srcSafetyDeposit: parseUnits("1", 6),
-      dstSafetyDeposit: parseUnits("1", 6),
+      srcSafetyDeposit: parseUnits("0.1", 6), // TRX
+      dstSafetyDeposit: parseUnits("0.001", 18),  // ETH
     },
     {
       auction: new Sdk.AuctionDetails({
