@@ -10,7 +10,7 @@ const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
 const { Address } = Sdk;
-const { Wallet } = require("./wallet.js");
+const { EVMWallet } = require("./wallet/evm.js");
 
 // Use Nile testnet
 const tronWeb = new TronWeb({
@@ -25,7 +25,7 @@ const resolver = new Resolver(
   tronWeb
 );
 
-const EvmChainUser = new Wallet(
+const EvmChainUser = new EVMWallet(
   config.src.UserPrivateKey, 
   new JsonRpcProvider(config.dst.RpcUrl)
 );
@@ -58,7 +58,7 @@ async function main() {
   console.log("New order created with salt:", order.salt.toString());
   console.log("Order details:", order.build());
 
-  // sign order
+  // sign order by user
   const signature = await EvmChainUser.signOrder(config.src.ChainId, order, config.src.LOP);
 
   // fill order

@@ -1,6 +1,6 @@
 const { Wallet: PKWallet } = require("ethers");
 
-class Wallet {
+class EVMWallet {
   provider;
   signer;
 
@@ -29,4 +29,4 @@ class Wallet {
   }
 }
 
-module.exports = { Wallet };
+module.exports = { EVMWallet };
