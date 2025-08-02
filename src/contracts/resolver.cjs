@@ -8,8 +8,9 @@ const abiData = JSON.parse(readFileSync('./abi/Resolver.json', 'utf8'));
 const contractABI = abiData.abi;
 
 class Resolver {
-  constructor(srcResolverAddress, lopAddress, tronWeb) {
+  constructor(srcResolverAddress, dstResolverAddress, lopAddress, tronWeb) {
     this.srcResolverAddress = srcResolverAddress;
+    this.dstResolverAddress = dstResolverAddress;
     this.lopAddress = lopAddress;
     this.tronWeb = tronWeb;
   }
