@@ -2,14 +2,12 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const Sdk = require("@1inch/cross-chain-sdk");
-const { parseEther, parseUnits, TypedDataEncoder } = require("ethers");
-const { UINT_40_MAX } = require("@1inch/byte-utils");
+const { parseUnits } = require("ethers");
 const { Resolver } = require("./resolver.cjs");
 const { JsonRpcProvider } = require("ethers");
 const { config } = require("../config/tron.js");
 const { TronWeb } = require("tronweb");
 const { createOrder } = require("./order.cjs");
-const { Address } = Sdk;
 const { EVMWallet } = require("./wallet/evm.js");
 
 // Use Nile testnet
