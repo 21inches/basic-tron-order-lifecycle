@@ -143,10 +143,22 @@ class TronResolver {
     const tronAddress = hexToTronAddress(this.ResolverAddress);
     const contract = await this.tronWeb.contract(contractABI, tronAddress);
 
+    // Format immutables as a tuple with the correct field names
+    const immutablesTuple = [
+      immutables.orderHash,
+      immutables.hashLock.value, // hashLock is an object with value property
+      immutables.maker.val, // maker is an Address object
+      immutables.taker.val, // taker is an Address object
+      immutables.token.val, // token is an Address object
+      immutables.amount,
+      immutables.safetyDeposit,
+      immutables.timeLocks.toSrcTimeLocks().privateCancellation // Use the proper encoding method
+    ];
+
     const tx = await contract.withdraw(
       escrow.toString(),
       secret,
-      immutables.build()
+      immutablesTuple
     ).send();
 
     return {
