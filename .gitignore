@@ -1,4 +1,6 @@
 .idea
+.cursor
+
 .env
 node_modules
 
