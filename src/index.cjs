@@ -69,8 +69,8 @@ async function main() {
 
     // create order with fresh timestamp and salt
     console.log("Creating new order with fresh parameters...");
-    const makingAmount = parseUnits("1.432", 6);
-    const takingAmount = parseUnits("1", 1);
+    const makingAmount = parseUnits("1.432", 18); // ITRC Token Amount
+    const takingAmount = parseUnits("1", 1); // USDT Token Amount
     const secret = "0x0000000000000000000000000000000000000000000000000000000000000000";
     const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
@@ -80,7 +80,7 @@ async function main() {
       srcChainUserAddress,
       makingAmount,
       takingAmount,
-      config.src.USDT,
+      config.src.ITRC,
       config.dst.BLT,
       secret,
       config.src.ChainId,
