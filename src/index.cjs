@@ -39,11 +39,12 @@ const evmResolver = new EvmResolver(
 // Create TronIndexer instance
 const tronIndexer = new TronIndexer(process.env.TRONGRID_API_KEY, 'nile');
 
-// Create EVM wallets for user and resolver
-const EvmUserWallet = new EVMWallet(
-  config.src.UserPrivateKey,
-  new JsonRpcProvider(config.dst.RpcUrl)
-);
+// Create wallets for user and resolver
+const TronUserWallet = new TronWeb({
+  fullHost: config.src.RpcUrl,
+  headers: { "TRON-PRO-API-KEY": process.env.TRONGRID_API_KEY },
+  privateKey: config.src.UserPrivateKey,
+});
 
 const EvmResolverWallet = new EVMWallet(
   config.dst.ResolverPrivateKey,
@@ -92,7 +93,20 @@ async function main() {
   console.log("Order details:", order.build());
 
   // sign order by user
-  const signature = await EvmUserWallet.signOrder(config.src.ChainId, order, config.src.LOP);
+  const typedData = order.getTypedData(config.src.ChainId);
+  const domain = {
+    name: "1inch Limit Order Protocol",
+    version: "4",
+    chainId: config.src.ChainId,
+    verifyingContract: config.src.LOP // Test Contract Address
+  };
+
+  const signature  = await TronUserWallet.trx._signTypedData(
+    domain,
+    { Order: typedData.types[typedData.primaryType] },
+    typedData.message
+  );
+  console.log("Signature TRON:", signature);
 
   // fill order
   console.log("Filling order...");
