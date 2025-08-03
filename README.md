@@ -96,9 +96,23 @@ dst: {
 
 ## Usage
 
-### Running the Order Lifecycle
+### Interactive CLI
 
-Execute the complete order lifecycle:
+The project includes an interactive CLI that guides you through the order creation process with confirmation at each step:
+
+```bash
+pnpm run cli
+```
+
+The CLI will:
+1. Ask you to select source and destination tokens
+2. Prompt for making and taking amounts
+3. Show order summary and get confirmation
+4. Execute the complete order lifecycle with progress updates
+
+### Running the Order Lifecycle (Non-Interactive)
+
+Execute the complete order lifecycle with predefined parameters:
 
 ```bash
 npm start
