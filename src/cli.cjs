@@ -17,7 +17,7 @@ const { EVMWallet } = require("./wallet/evm.js");
 const { TronIndexer } = require("./indexer/tron.js");
 const { hexToTronAddress } = require("./utils/tron.cjs");
 
-// Token information for both directions
+// Token information for tron>evm direction
 const TOKENS = {
   tron: {
     ITRC: {
@@ -80,22 +80,6 @@ const dstEscrowFactory = new EvmEscrowFactory(
 
 // Initialize indexer
 const tronIndexer = new TronIndexer(process.env.TRONGRID_API_KEY, 'nile');
-
-async function selectDirection() {
-  const { direction } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'direction',
-      message: 'Select order direction:',
-      choices: [
-        { name: 'Tron → EVM (Tron to Ethereum)', value: 'tron_to_evm' },
-        { name: 'EVM → Tron (Ethereum to Tron)', value: 'evm_to_tron' }
-      ]
-    }
-  ]);
-
-  return direction;
-}
 
 async function selectToken(chain, message) {
   const tokens = TOKENS[chain];
@@ -372,142 +356,12 @@ async function executeTronToEvmOrder() {
   }
 }
 
-async function executeEvmToTronOrder() {
-  try {
-    console.log('🔄 Executing EVM → Tron Order\n');
-
-    // Step 1: Select source token (EVM)
-    console.log('📤 Step 1: Select source token (EVM)');
-    const srcToken = await selectToken('evm', 'Select source token:');
-
-    // Step 2: Select destination token (Tron)
-    console.log('\n📥 Step 2: Select destination token (Tron)');
-    const dstToken = await selectToken('tron', 'Select destination token:');
-
-    // Step 3: Enter making amount
-    console.log('\n💰 Step 3: Enter making amount');
-    const makingAmount = await getAmount(srcToken, 'Enter making amount');
-
-    // Step 4: Enter taking amount
-    console.log('\n💰 Step 4: Enter taking amount');
-    const takingAmount = await getAmount(dstToken, 'Enter taking amount');
-
-    // Get user address (EVM)
-    const srcChainUserAddress = await EvmUserWallet.getAddress();
-
-    // Create order
-    console.log('\n📋 Step 5: Creating order...');
-    const secret = "0x0000000000000000000000000000000000000000000000000000000000000000";
-    const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
-
-    const order = await createOrder(
-      config.dst.EscrowFactory,
-      srcChainUserAddress,
-      srcChainUserAddress,
-      makingAmount,
-      takingAmount,
-      srcToken.address,
-      dstToken.address,
-      secret,
-      config.dst.ChainId,
-      config.src.ChainId,
-      config.dst.ResolverContractAddress,
-      srcTimestamp
-    );
-
-    console.log('✅ Order created successfully!');
-    console.log(`Salt: ${order.salt.toString()}`);
-
-    // Step 6: Confirm order
-    const orderConfirmed = await confirmOrder(order, srcToken, dstToken);
-    if (!orderConfirmed) {
-      console.log('❌ Order cancelled by user');
-      return;
-    }
-
-    // Step 7: Sign order
-    console.log('\n✍️  Step 6: Signing order...');
-    const signatureConfirmed = await confirmSignature();
-    if (!signatureConfirmed) {
-      console.log('❌ Signature cancelled by user');
-      return;
-    }
-
-    const signature = await EvmUserWallet.signOrder(config.dst.ChainId, order, config.dst.LOP);
-    console.log('✅ Order signed successfully!');
-
-    // Step 8: Fill order (EVM to Tron)
-    console.log('\n🔄 Step 7: Filling order...');
-    const fillConfirmed = await confirmFill();
-    if (!fillConfirmed) {
-      console.log('❌ Order fill cancelled by user');
-      return;
-    }
-
-    console.log('⏳ Filling order...');
-    const { txHash: orderFillHash, blockHash: srcDeployBlock } =
-      await EvmResolverWallet.send(evmResolver.deploySrc(
-        config.dst.ChainId,
-        order,
-        signature,
-        Sdk.TakerTraits.default()
-          .setExtension(order.extension)
-          .setAmountMode(Sdk.AmountMode.maker)
-          .setAmountThreshold(order.takingAmount),
-        order.makingAmount,
-        order.escrowExtension.hashLockInfo,
-        config.dst.LOP
-      ));
-    console.log('✅ Order filled successfully!');
-    console.log(`Transaction Hash: ${orderFillHash}`);
-
-    // Step 9: Wait for escrow events (EVM)
-    console.log('\n🔍 Step 8: Fetching escrow events...');
-    console.log('⏳ Waiting for source escrow creation event...');
-    const srcEscrowEvent = await dstEscrowFactory.getSrcDeployEvent(
-      srcDeployBlock
-    );
-    const dstImmutables = srcEscrowEvent[0]
-      .withComplement(srcEscrowEvent[1])
-      .withTaker(new Address(config.dst.ResolverContractAddress));
-    console.log("Src escrow event fetched");
-    console.log('✅ Source escrow event received!');
-
-    // Step 10: Deploy destination escrow (Tron)
-    console.log('\n🏗️  Step 9: Deploying destination escrow...');
-    console.log('Creating destination escrow immutables...');
-    const { txHash: dstDepositHash, blockTimestamp: dstDeployedAt } =
-      await tronResolver.deployDst(dstImmutables, srcDeployBlock);
-    console.log('✅ Destination escrow deployed successfully!');
-    console.log(`Transaction Hash: ${dstDepositHash}`);
-
-    console.log('\n🎉 EVM → Tron Order lifecycle completed successfully!');
-    console.log('\n📊 Transaction Summary:');
-    console.log(`- Order Fill: ${orderFillHash}`);
-    console.log('⚠️  Note: Full escrow lifecycle requires EVM indexer implementation');
-
-  } catch (error) {
-    console.error('❌ Error during EVM → Tron order lifecycle:', error.message);
-    console.error(error.stack);
-  }
-}
-
 async function executeOrderLifecycle() {
   try {
-    console.log('🚀 Welcome to the 1inch Cross-Chain Order CLI!\n');
+    console.log('🚀 Welcome to the 1inch Cross-Chain Order CLI!');
+    console.log('📤 Direction: Tron → EVM\n');
 
-    // Step 0: Select direction
-    console.log('🔄 Step 0: Select order direction');
-    const direction = await selectDirection();
-
-    if (direction === 'tron_to_evm') {
-      await executeTronToEvmOrder();
-    } else if (direction === 'evm_to_tron') {
-      await executeEvmToTronOrder();
-    } else {
-      console.log('❌ Invalid direction selected');
-      return;
-    }
+    await executeTronToEvmOrder();
 
   } catch (error) {
     console.error('❌ Error during order lifecycle:', error.message);

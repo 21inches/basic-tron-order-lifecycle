@@ -67,7 +67,7 @@ class EvmResolver {
 
   deployDst(immutables) {
     return {
-      to: this.tronAddress,
+      to: this.evmAddress,
       data: this.iface.encodeFunctionData("deployDst", [
         immutables.build(),
         immutables.timeLocks.toSrcTimeLocks().privateCancellation,
@@ -78,7 +78,7 @@ class EvmResolver {
 
   withdraw(side, escrow, secret, immutables) {
     return {
-      to: side === "src" ? this.evmAddress : this.tronAddress,
+      to: this.evmAddress,
       data: this.iface.encodeFunctionData("withdraw", [
         escrow.toString(),
         secret,
