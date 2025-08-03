@@ -27,6 +27,7 @@ async function createOrder(
     // Convert TRON address if needed
     if (srcChainId === CHAIN_IDS.TRON_MAINNET || srcChainId === CHAIN_IDS.TRON_NILE) {
       maker = tronAddressToHex(maker);
+      receiver = tronAddressToHex(receiver);
     }
 
 

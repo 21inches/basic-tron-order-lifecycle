@@ -230,6 +230,7 @@ async function executeTronToEvmOrder() {
     const order = await createOrder(
       config.src.EscrowFactory,
       srcChainUserAddress,
+      srcChainUserAddress,
       makingAmount,
       takingAmount,
       srcToken.address,
@@ -401,6 +402,7 @@ async function executeEvmToTronOrder() {
 
     const order = await createOrder(
       config.dst.EscrowFactory,
+      srcChainUserAddress,
       srcChainUserAddress,
       makingAmount,
       takingAmount,
