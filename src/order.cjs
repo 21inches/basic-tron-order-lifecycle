@@ -12,7 +12,8 @@ const CHAIN_IDS = {
 
 async function createOrder(
   escrowFactoryAddress,
-  srcChainUserAddress,
+  maker,
+  receiver,
   makingAmount,
   takingAmount,
   srcTokenAddress,
@@ -25,7 +26,7 @@ async function createOrder(
 ) {
     // Convert TRON address if needed
     if (srcChainId === CHAIN_IDS.TRON_MAINNET || srcChainId === CHAIN_IDS.TRON_NILE) {
-      srcChainUserAddress = tronAddressToHex(srcChainUserAddress);
+      maker = tronAddressToHex(maker);
     }
 
 
@@ -33,7 +34,8 @@ async function createOrder(
     new Address(escrowFactoryAddress),
     {
       salt: Sdk.randBigInt(1000n),
-      maker: new Address(srcChainUserAddress),
+      maker: new Address(maker),
+      receiver: new Address(receiver),
       makingAmount,
       takingAmount,
       makerAsset: new Address(srcTokenAddress),

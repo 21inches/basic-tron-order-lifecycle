@@ -50,6 +50,10 @@ const EvmResolverWallet = new EVMWallet(
   config.dst.ResolverPrivateKey,
   new JsonRpcProvider(config.dst.RpcUrl)
 );
+const EvmUserWallet = new EVMWallet(
+  config.dst.UserPrivateKey,
+  new JsonRpcProvider(config.dst.RpcUrl)
+);
 
 // Create escrow factory instances for both chains
 const srcEscrowFactory = new TronEscrowFactory(
@@ -76,9 +80,12 @@ async function main() {
     const srcTimestamp = BigInt(Math.floor(Date.now() / 1000));
 
     // Create a new order with fresh parameters
+    let maker = srcChainUserAddress;
+    let dstReceiver = await EvmUserWallet.getAddress(); // Destination User Address as Receiver
     const order = await createOrder(
       config.src.EscrowFactory,
-      srcChainUserAddress,
+      maker,
+      dstReceiver,
       makingAmount,
       takingAmount,
       config.src.ITRC,
