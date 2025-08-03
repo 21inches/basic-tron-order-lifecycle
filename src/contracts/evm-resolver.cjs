@@ -10,9 +10,9 @@ const contractABI = abiData.abi;
 class EvmResolver {
   iface = new Interface(contractABI);
 
-  constructor(srcAddress, dstAddress) {
-    this.srcAddress = srcAddress;
-    this.dstAddress = dstAddress;
+  constructor(evmAddress, tronAddress) {
+    this.evmAddress = evmAddress;
+    this.tronAddress = tronAddress;
   }
 
   deploySrc(
@@ -28,7 +28,7 @@ class EvmResolver {
     const { args, trait } = takerTraits.encode();
     const immutables = order.toSrcImmutables(
       chainId,
-      new Sdk.Address(this.srcAddress),
+      new Sdk.Address(this.evmAddress),
       amount,
       hashLock
     ).build();
@@ -36,7 +36,7 @@ class EvmResolver {
     immutables.orderHash = hash;
 
     return {
-      to: this.srcAddress,
+      to: this.evmAddress,
       data: this.iface.encodeFunctionData("deploySrc", [
         immutables,
         order.build(),
@@ -67,7 +67,7 @@ class EvmResolver {
 
   deployDst(immutables) {
     return {
-      to: this.dstAddress,
+      to: this.tronAddress,
       data: this.iface.encodeFunctionData("deployDst", [
         immutables.build(),
         immutables.timeLocks.toSrcTimeLocks().privateCancellation,
@@ -78,7 +78,7 @@ class EvmResolver {
 
   withdraw(side, escrow, secret, immutables) {
     return {
-      to: side === "src" ? this.srcAddress : this.dstAddress,
+      to: side === "src" ? this.evmAddress : this.tronAddress,
       data: this.iface.encodeFunctionData("withdraw", [
         escrow.toString(),
         secret,
@@ -89,7 +89,7 @@ class EvmResolver {
 
   cancel(side, escrow, immutables) {
     return {
-      to: side === "src" ? this.srcAddress : this.dstAddress,
+      to: side === "src" ? this.evmAddress : this.tronAddress,
       data: this.iface.encodeFunctionData("cancel", [
         escrow.toString(),
         immutables.build(),

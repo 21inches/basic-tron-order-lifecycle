@@ -6,13 +6,15 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.cjs"
+    "start": "node src/index.cjs",
+    "cli": "node src/cli.cjs"
   },
   "dependencies": {
     "@1inch/cross-chain-sdk": "git+https://github.com/21inches/cross-chain-sdk.git",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "ethers": "^6.15.0",
+    "inquirer": "8.2.6",
     "tronweb": "^6.0.4",
     "web3": "^4.16.0"
   }

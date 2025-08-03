@@ -112,6 +112,45 @@ class TronResolver {
     };
   }
 
+  async deployDst(dstImmutables, srcCancellationTimestamp) {
+    // Convert hex address to TRON format for TronWeb
+    const tronAddress = hexToTronAddress(this.ResolverAddress);
+    const contract = await this.tronWeb.contract(contractABI, tronAddress);
+
+    // Build the dst immutables
+    const ib = dstImmutables.build();
+    const dstImmutablesArg = [
+      ib.orderHash,
+      ib.hashlock,
+      ib.maker,
+      ib.taker,
+      ib.token,
+      ib.amount,
+      ib.safetyDeposit,
+      ib.timelocks
+    ];
+
+    console.log("🔍 About to call deployDst with:");
+    console.log("  - dstImmutables:", dstImmutablesArg);
+    console.log("  - srcCancellationTimestamp:", srcCancellationTimestamp);
+
+    const tx = await contract.deployDst(
+      dstImmutablesArg,
+      srcCancellationTimestamp
+    ).send();
+
+    console.log("🔍 Transaction sent successfully:", tx);
+
+    // Get transaction info to extract block hash
+    const txInfo = await this.tronWeb.trx.getTransactionInfo(tx);
+    const blockHash = txInfo.blockHash;
+
+    return {
+      txHash: tx,
+      blockHash: blockHash
+    };
+  }
+
   hashOrder(srcChainId, order) {
     const typedData = order.getTypedData(srcChainId);
     const domain = {
