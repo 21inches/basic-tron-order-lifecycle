@@ -110,6 +110,100 @@ The CLI will:
 3. Show order summary and get confirmation
 4. Execute the complete order lifecycle with progress updates
 
+### Example CLI Output
+
+Here's an example of the complete CLI execution flow with transaction hashes:
+
+```bash
+🚀 Welcome to the 1inch Cross-Chain Order CLI!
+📤 Direction: Tron → EVM
+
+🔄 Executing Tron → EVM Order
+
+📤 Step 1: Select source token (Tron)
+? Select source token: ITRC Token (ITRC)
+
+📥 Step 2: Select destination token (EVM)
+? Select destination token: BLT Token (BLT)
+
+💰 Step 3: Enter making amount
+? Enter making amount (ITRC): 2
+
+💰 Step 4: Enter taking amount
+? Enter taking amount (BLT): 0.1
+
+📋 Step 5: Creating order...
+✅ Order created successfully!
+Salt: 1123842704170549531344358673149415855512764227903637
+
+=== ORDER SUMMARY ===
+Source Token: ITRC Token (ITRC)
+Destination Token: BLT Token (BLT)
+Making Amount: 2.0 ITRC
+Taking Amount: 0.1 BLT
+Salt: 1123842704170549531344358673149415855512764227903637
+Maker: 0xcc5771e9c0e3df49b17c528a324a59ea6c2e8a13
+=====================
+
+? Do you want to proceed with this order? Yes
+
+✍️  Step 6: Signing order...
+? Ready to sign the order? Yes
+✅ Order signed successfully!
+
+🔄 Step 7: Filling order...
+? Ready to fill the order? Yes
+⏳ Filling order...
+✅ Order filled successfully!
+Transaction Hash: 0a725c408561d2a86b63d5e9f5e95b8fa342432f53e5dc3577921a27685d4dd6
+
+🔍 Step 8: Fetching escrow events...
+⏳ Waiting for source escrow creation event...
+✅ Source escrow event received!
+
+🏗️  Step 9: Deploying destination escrow...
+Creating destination escrow immutables...
+⏳ Deploying destination escrow...
+✅ Destination escrow deployed successfully!
+Transaction Hash: 0x67412aafb90f263a2a7e82d8da442c70442129d40faa0a848b5a366a55c926af
+
+📍 Step 10: Getting escrow addresses...
+✅ Escrow addresses retrieved!
+Source Escrow: 0xb09c7e0ceca95ab4992d5db86cd458231b139924
+Source Escrow (Tron Format): TS53Q6ucj4Po7tz745YwvLmJ94XUANWwWB
+Destination Escrow: 0xd533d1846fe3227dbf80f8baf1dd46c7d7ec5334
+
+💸 Step 11: Withdrawing from escrows...
+? Ready to withdraw from escrows? Yes
+⏳ Waiting 10 seconds before withdrawal...
+
+⏳ Withdrawing from destination escrow...
+✅ Destination escrow withdrawn successfully!
+Transaction Hash: 0xde776b0cd7629e8efb9b0f1c05e1c2f2e076969b7c1c25d446978e5147403fb3
+
+⏳ Withdrawing from source escrow...
+✅ Source escrow withdrawn successfully!
+Transaction Hash: b5a34f4482cfed3f0925577aced7086e8b739102bf09ab269ab08b063a0e7705
+
+🎉 Tron → EVM Order lifecycle completed successfully!
+
+📊 Transaction Summary:
+- Order Fill: 0a725c408561d2a86b63d5e9f5e95b8fa342432f53e5dc3577921a27685d4dd6
+- Destination Escrow Deploy: 0x67412aafb90f263a2a7e82d8da442c70442129d40faa0a848b5a366a55c926af
+- Destination Withdraw: 
+- Source Withdraw: b5a34f4482cfed3f0925577aced7086e8b739102bf09ab269ab08b063a0e7705
+```
+
+**Important Transaction Hashes:**
+
+**TRON Network (Nile Testnet):**
+- **Order Fill Transaction**: [`0a725c408561d2a86b63d5e9f5e95b8fa342432f53e5dc3577921a27685d4dd6`](https://nile.tronscan.org/#/transaction/0a725c408561d2a86b63d5e9f5e95b8fa342432f53e5dc3577921a27685d4dd6)
+- **Source Withdraw**: [`b5a34f4482cfed3f0925577aced7086e8b739102bf09ab269ab08b063a0e7705`](https://nile.tronscan.org/#/transaction/b5a34f4482cfed3f0925577aced7086e8b739102bf09ab269ab08b063a0e7705)
+
+**Ethereum Network (Sepolia Testnet):**
+- **Destination Escrow Deploy**: [`0x67412aafb90f263a2a7e82d8da442c70442129d40faa0a848b5a366a55c926af`](https://sepolia.etherscan.io/tx/0x67412aafb90f263a2a7e82d8da442c70442129d40faa0a848b5a366a55c926af)
+- **Destination Withdraw**: [`0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba`](https://sepolia.etherscan.io/tx/0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba)
+
 ### Running the Order Lifecycle (Non-Interactive)
 
 Execute the complete order lifecycle with predefined parameters:

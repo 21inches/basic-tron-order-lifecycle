@@ -305,7 +305,7 @@ async function executeTronToEvmOrder() {
 
     console.log('✅ Escrow addresses retrieved!');
     console.log(`Source Escrow: ${srcEscrowAddress.toString()}`);
-    console.log(`Source Escrow (Tron): ${hexToTronAddress(srcEscrowAddress.toString())}`);
+    console.log(`Source Escrow (Tron Format): ${hexToTronAddress(srcEscrowAddress.toString())}`);
     console.log(`Destination Escrow: ${dstEscrowAddress.toString()}`);
 
     // Step 12: Withdraw from escrows
